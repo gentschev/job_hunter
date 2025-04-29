@@ -1,0 +1,74 @@
+<div class="bg-white rounded-lg shadow p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold"><%= @job_listing.title %></h2>
+    <div>
+      <%= link_to "Back to Listings", job_listings_path, class: "px-4 py-2 bg-gray-200 rounded hover:bg-gray-300" %>
+    </div>
+  </div>
+  
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-gray-50 p-4 rounded">
+      <h3 class="text-sm font-bold text-gray-500 mb-1">Company</h3>
+      <p><%= @job_listing.company %></p>
+    </div>
+    <div class="bg-gray-50 p-4 rounded">
+      <h3 class="text-sm font-bold text-gray-500 mb-1">Location</h3>
+      <p><%= @job_listing.location %></p>
+    </div>
+    <div class="bg-gray-50 p-4 rounded">
+      <h3 class="text-sm font-bold text-gray-500 mb-1">Industry</h3>
+      <p><%= @job_listing.industry || "Not specified" %></p>
+    </div>
+    <div class="bg-gray-50 p-4 rounded">
+      <h3 class="text-sm font-bold text-gray-500 mb-1">Status</h3>
+      <%= form_with model: @job_listing, local: true do |f| %>
+        <%= f.select :status, JobListing.statuses.keys.map { |s| [status_display_name(s), s] }, {}, 
+                     { class: "w-full p-2 border rounded", onchange: "this.form.submit();" } %>
+      <% end %>
+    </div>
+  </div>
+  
+  <% if @job_listing.salary_information.present? %>
+    <div class="bg-green-50 p-4 rounded mb-6">
+      <h3 class="text-sm font-bold text-gray-500 mb-1">Salary Information</h3>
+      <p><%= @job_listing.salary_information %></p>
+    </div>
+  <% end %>
+  
+  <% if @job_listing.experience_required.present? %>
+    <div class="mb-6">
+      <h3 class="text-lg font-bold mb-2">Experience Required</h3>
+      <div class="bg-gray-50 p-4 rounded">
+        <p><%= @job_listing.experience_required %></p>
+      </div>
+    </div>
+  <% end %>
+  
+  <% if @job_listing.required_skills.present? %>
+    <div class="mb-6">
+      <h3 class="text-lg font-bold mb-2">Required Skills</h3>
+      <div class="bg-gray-50 p-4 rounded">
+        <p><%= @job_listing.required_skills %></p>
+      </div>
+    </div>
+  <% end %>
+  
+  <div class="mb-6">
+    <h3 class="text-lg font-bold mb-2">Job Description</h3>
+    <div class="bg-gray-50 p-4 rounded prose">
+      <%= simple_format(@job_listing.description) %>
+    </div>
+  </div>
+  
+  <div class="mt-6 border-t pt-4">
+    <div class="flex justify-between">
+      <div>
+        <p class="text-sm text-gray-500">Posted: <%= @job_listing.posted_date&.strftime("%b %d, %Y") || "Unknown" %></p>
+        <p class="text-sm text-gray-500">Found: <%= @job_listing.scraped_date.strftime("%b %d, %Y") %></p>
+      </div>
+      <div>
+        <%= link_to "View on LinkedIn", @job_listing.url, target: "_blank", class: "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" %>
+      </div>
+    </div>
+  </div>
+</div>

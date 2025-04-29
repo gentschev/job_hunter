@@ -1,0 +1,48 @@
+<div class="bg-white rounded-lg shadow p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold">Job Listings</h2>
+    <div class="space-x-2">
+      <%= link_to "All", job_listings_path, class: "px-3 py-1 rounded #{params[:status].blank? ? 'bg-blue-600 text-white' : 'bg-gray-200'}" %>
+      <% JobListing.statuses.keys.each do |status| %>
+        <%= link_to status_display_name(status), job_listings_path(status: status), class: "px-3 py-1 rounded #{params[:status] == status ? 'bg-blue-600 text-white' : 'bg-gray-200'}" %>
+      <% end %>
+    </div>
+  </div>
+  
+  <% if @job_listings.any? %>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="py-2 px-4 text-left">Title</th>
+            <th class="py-2 px-4 text-left">Company</th>
+            <th class="py-2 px-4 text-left">Location</th>
+            <th class="py-2 px-4 text-left">Industry</th>
+            <th class="py-2 px-4 text-left">Status</th>
+            <th class="py-2 px-4 text-left">Date Found</th>
+            <th class="py-2 px-4 text-left"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @job_listings.each do |listing| %>
+            <tr class="border-t">
+              <td class="py-2 px-4"><%= listing.title %></td>
+              <td class="py-2 px-4"><%= listing.company %></td>
+              <td class="py-2 px-4"><%= listing.location %></td>
+              <td class="py-2 px-4"><%= listing.industry %></td>
+              <td class="py-2 px-4"><span class="px-2 py-1 rounded text-xs <%= status_color(listing.status) %>"><%= status_display_name(listing.status) %></span></td>
+              <td class="py-2 px-4"><%= listing.scraped_date.strftime("%b %d, %Y") %></td>
+              <td class="py-2 px-4 text-right">
+                <%= link_to "View", job_listing_path(listing), class: "text-blue-600 hover:underline" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="bg-gray-50 p-4 rounded text-center">
+      <p>No job listings found for the selected status.</p>
+    </div>
+  <% end %>
+</div>

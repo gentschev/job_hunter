@@ -1,0 +1,22 @@
+<div class="nested-fields bg-gray-50 p-4 rounded">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div>
+      <%= f.label :industry, "Industry", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_field :industry, class: "w-full p-2 border rounded" %>
+    </div>
+    <div>
+      <%= f.label :is_blacklisted, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <div class="flex items-center mt-2">
+        <%= f.check_box :is_blacklisted, class: "mr-2" %>
+        <span>Blacklist this industry</span>
+      </div>
+    </div>
+    <div id="priority_field" class="<%= f.object.is_blacklisted ? 'hidden' : '' %>">
+      <%= f.label :priority, "Priority", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.number_field :priority, min: 1, class: "w-full p-2 border rounded" %>
+    </div>
+  </div>
+  <div class="mt-2 text-right">
+    <%= link_to_remove_association "Remove", f, class: "text-red-600 hover:underline" %>
+  </div>
+</div>

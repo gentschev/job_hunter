@@ -1,0 +1,55 @@
+<div class="bg-white rounded-lg shadow p-6">
+  <h2 class="text-2xl font-bold mb-6">Dashboard</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-blue-50 p-4 rounded-lg shadow">
+      <h3 class="text-lg font-bold mb-2">New Listings</h3>
+      <p class="text-3xl font-bold"><%= current_user.job_listings.new_listing.count %></p>
+    </div>
+    <div class="bg-green-50 p-4 rounded-lg shadow">
+      <h3 class="text-lg font-bold mb-2">Interested</h3>
+      <p class="text-3xl font-bold"><%= current_user.job_listings.interested.count %></p>
+    </div>
+    <div class="bg-purple-50 p-4 rounded-lg shadow">
+      <h3 class="text-lg font-bold mb-2">Applied</h3>
+      <p class="text-3xl font-bold"><%= current_user.job_listings.applied.count %></p>
+    </div>
+  </div>
+
+  <h3 class="text-xl font-bold mb-4">Recent Job Listings</h3>
+  
+  <% if @job_listings.any? %>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="py-2 px-4 text-left">Title</th>
+            <th class="py-2 px-4 text-left">Company</th>
+            <th class="py-2 px-4 text-left">Location</th>
+            <th class="py-2 px-4 text-left">Status</th>
+            <th class="py-2 px-4 text-left">Date Found</th>
+            <th class="py-2 px-4 text-left"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @job_listings.each do |listing| %>
+            <tr class="border-t">
+              <td class="py-2 px-4"><%= listing.title %></td>
+              <td class="py-2 px-4"><%= listing.company %></td>
+              <td class="py-2 px-4"><%= listing.location %></td>
+              <td class="py-2 px-4"><span class="px-2 py-1 rounded text-xs <%= status_color(listing.status) %>"><%= status_display_name(listing.status) %></span></td>
+              <td class="py-2 px-4"><%= listing.scraped_date.strftime("%b %d, %Y") %></td>
+              <td class="py-2 px-4 text-right">
+                <%= link_to "View", job_listing_path(listing), class: "text-blue-600 hover:underline" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="bg-gray-50 p-4 rounded text-center">
+      <p>No job listings found yet. Set up your search preferences and run a search.</p>
+    </div>
+  <% end %>
+</div>

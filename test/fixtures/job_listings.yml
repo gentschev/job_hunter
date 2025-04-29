@@ -1,0 +1,33 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  external_id: MyString
+  title: MyString
+  company: MyString
+  location: MyString
+  description: MyText
+  industry: MyString
+  experience_required: MyString
+  required_skills: MyText
+  salary_information: MyString
+  url: MyString
+  posted_date: 2025-04-27 13:56:56
+  scraped_date: 2025-04-27 13:56:56
+  status: 1
+  user: one
+
+two:
+  external_id: MyString
+  title: MyString
+  company: MyString
+  location: MyString
+  description: MyText
+  industry: MyString
+  experience_required: MyString
+  required_skills: MyText
+  salary_information: MyString
+  url: MyString
+  posted_date: 2025-04-27 13:56:56
+  scraped_date: 2025-04-27 13:56:56
+  status: 1
+  user: two

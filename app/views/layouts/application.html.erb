@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JobHunter</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <header style="background-color: #0073b1; color: white; padding: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
+        <h1 style="font-size: 1.5rem; font-weight: bold;">JobHunter</h1>
+        <nav>
+          <% if user_signed_in? %>
+            <%= link_to "Dashboard", dashboards_index_path, style: "color: white; margin-right: 1rem;" %>
+            <%= link_to "Job Listings", job_listings_path, style: "color: white; margin-right: 1rem;" %>
+            <%= link_to "Search Preferences", edit_search_preference_path, style: "color: white; margin-right: 1rem;" %>
+            <%= button_to "Sign Out", destroy_user_session_path, method: :delete, style: "color: white; background: none; border: none; cursor: pointer;" %>
+          <% else %>
+            <%= link_to "Sign In", new_user_session_path, style: "color: white; margin-right: 1rem;" %>
+            <%= link_to "Sign Up", new_user_registration_path, style: "color: white;" %>
+          <% end %>
+        </nav>
+      </div>
+    </header>
+
+    <main style="max-width: 1200px; margin: 1rem auto; padding: 0 1rem;">
+      <% if notice %>
+        <div style="background-color: #d1fae5; border-left: 4px solid #10b981; color: #065f46; padding: 1rem; margin-bottom: 1rem;">
+          <%= notice %>
+        </div>
+      <% end %>
+      <% if alert %>
+        <div style="background-color: #fee2e2; border-left: 4px solid #ef4444; color: #b91c1c; padding: 1rem; margin-bottom: 1rem;">
+          <%= alert %>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </main>
+  </body>
+</html>
