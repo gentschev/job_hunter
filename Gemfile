@@ -21,6 +21,8 @@ gem "importmap-rails"
 # Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
 gem "turbo-rails"
 
+gem "requestjs-rails"
+
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
 gem "stimulus-rails"
 
@@ -83,8 +85,6 @@ gem 'pundit'
 gem 'sidekiq'
 # API serialization
 gem 'active_model_serializers'
-# Nested forms
-gem 'cocoon'
 # For Ruby 3.2 compatibility
 gem 'net-smtp', require: false
 gem 'net-imap', require: false

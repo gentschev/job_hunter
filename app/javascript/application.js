@@ -3,10 +3,10 @@ console.log("Loading application.js")
 
 // Basic Rails dependencies
 import "@hotwired/turbo-rails" 
-import "@rails/activestorage"
 
-// Initialize ActiveStorage
+import * as ActiveStorage from "@rails/activestorage"
 ActiveStorage.start()
 
-// Use our manual setup instead of Stimulus
-import "./manual_setup"
+import "controllers"
+
+console.log("JS booted with Stimulus")

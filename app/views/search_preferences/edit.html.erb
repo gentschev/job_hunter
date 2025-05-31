@@ -1,30 +1,25 @@
 <div data-controller="simple-test" class="bg-white rounded-lg shadow p-6">
-  <div class="bg-gray-100 p-4 mb-6 rounded">
-    <h3 class="text-lg font-bold mb-2">Test Area</h3>
-    <p data-simple-test-target="output">Click the button to test Stimulus.</p>
-    <button data-action="click->simple-test#hello" class="px-4 py-2 bg-blue-500 text-white rounded">Test Stimulus</button>
-    <button onclick="document.getElementById('js-debug').textContent = 'Basic JS works!'" class="ml-2 px-4 py-2 bg-green-500 text-white rounded">Test Basic JS</button>
-    <div id="js-debug" class="mt-2 text-sm text-gray-700"></div>
-  </div>
+
   <h2 class="text-2xl font-bold mb-6">Search Preferences</h2>
-  
-  <!-- Job Titles Section -->
+
+  <!-- ░░░░░░░░░░ Job Titles ░░░░░░░░░░ -->
   <div class="mb-8" data-controller="job-title-preference">
     <h3 class="text-xl font-bold mb-4">Job Titles</h3>
+
     <div class="mb-4">
       <p class="text-gray-600 mb-4">Enter job titles you're interested in. Higher priority titles will be given preference in filtering.</p>
-      
+
       <div data-job-title-preference-target="errors"></div>
-      
+
       <!-- New job title form -->
       <div class="bg-gray-50 p-4 rounded mb-4" data-job-title-preference-target="form">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="col-span-2">
-            <label for="new_job_title" class="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="new_job_title">Job Title</label>
             <input type="text" id="new_job_title" data-job-title-preference-target="title" class="w-full p-2 border rounded" placeholder="e.g. Software Engineer">
           </div>
           <div>
-            <label for="new_job_title_priority" class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="new_job_title_priority">Priority</label>
             <input type="number" id="new_job_title_priority" data-job-title-preference-target="priority" min="1" value="1" class="w-full p-2 border rounded">
           </div>
         </div>
@@ -34,7 +29,7 @@
           </button>
         </div>
       </div>
-      
+
       <!-- Job titles list -->
       <div id="job_titles" class="space-y-4 transition-all duration-300" data-job-title-preference-target="list">
         <% @search_preference.job_title_preferences.each do |pref| %>
@@ -54,7 +49,7 @@
                 <a href="#" data-action="job-title-preference#remove" class="text-red-600 hover:underline">Remove</a>
               </div>
             </div>
-            
+
             <!-- Edit Mode -->
             <div class="edit-mode hidden">
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -75,7 +70,7 @@
           </div>
         <% end %>
       </div>
-      
+
       <!-- Template for new job title items -->
       <template data-job-title-preference-target="template">
         <div class="nested-fields bg-gray-50 p-4 rounded transition-opacity duration-300" data-preference-id="NEW_ID">
@@ -90,11 +85,11 @@
               </div>
             </div>
             <div class="mt-2 text-right">
-              <a href="#" data-action="job_title_preference#toggleEditMode" class="text-blue-600 hover:underline mr-3">Edit</a>
-              <a href="#" data-action="job_title_preference#remove" class="text-red-600 hover:underline">Remove</a>
+              <a href="#" data-action="job-title-preference#toggleEditMode" class="text-blue-600 hover:underline mr-3">Edit</a>
+              <a href="#" data-action="job-title-preference#remove" class="text-red-600 hover:underline">Remove</a>
             </div>
           </div>
-          
+
           <!-- Edit Mode -->
           <div class="edit-mode hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -108,50 +103,51 @@
               </div>
             </div>
             <div class="mt-2 text-right">
-              <button type="button" data-action="job_title_preference#cancelEdit" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">Cancel</button>
-              <button type="button" data-action="job_title_preference#edit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+              <button type="button" data-action="job-title-preference#cancelEdit" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">Cancel</button>
+              <button type="button" data-action="job-title-preference#edit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
             </div>
           </div>
         </div>
       </template>
     </div>
   </div>
-  
-  <!-- Locations Section -->
+
+  <!-- ░░░░░░░░░░ Locations ░░░░░░░░░░ -->
   <div class="mb-8" data-controller="location-preference">
     <h3 class="text-xl font-bold mb-4">Locations</h3>
+
     <div class="mb-4">
       <p class="text-gray-600 mb-4">Enter locations you're interested in. Higher priority locations will be given preference in filtering.</p>
-      
+
       <div data-location-preference-target="errors"></div>
-      
+
       <!-- New location form -->
       <div class="bg-gray-50 p-4 rounded mb-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label for="new_location_city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="new_location_city">City</label>
             <input type="text" id="new_location_city" data-location-preference-target="city" class="w-full p-2 border rounded" placeholder="e.g. San Francisco">
           </div>
           <div>
-            <label for="new_location_state" class="block text-sm font-medium text-gray-700 mb-1">State/Province</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="new_location_state">State/Province</label>
             <input type="text" id="new_location_state" data-location-preference-target="state" class="w-full p-2 border rounded" placeholder="e.g. CA">
           </div>
           <div>
-            <label for="new_location_country" class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="new_location_country">Country</label>
             <input type="text" id="new_location_country" data-location-preference-target="country" class="w-full p-2 border rounded" placeholder="e.g. USA">
           </div>
           <div>
-            <label for="new_location_priority" class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="new_location_priority">Priority</label>
             <input type="number" id="new_location_priority" data-location-preference-target="priority" min="1" value="1" class="w-full p-2 border rounded">
           </div>
         </div>
         <div class="mt-4 text-right">
-          <button type="button" data-action="location_preference#add" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" data-action="location-preference#add" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             Add Location
           </button>
         </div>
       </div>
-      
+
       <!-- Locations list -->
       <div id="locations" class="space-y-4 transition-all duration-300" data-location-preference-target="list">
         <% @search_preference.location_preferences.each do |pref| %>
@@ -173,11 +169,11 @@
                 </div>
               </div>
               <div class="mt-2 text-right">
-                <a href="#" data-action="location_preference#toggleEditMode" class="text-blue-600 hover:underline mr-3">Edit</a>
-                <a href="#" data-action="location_preference#remove" class="text-red-600 hover:underline">Remove</a>
+                <a href="#" data-action="location-preference#toggleEditMode" class="text-blue-600 hover:underline mr-3">Edit</a>
+                <a href="#" data-action="location-preference#remove" class="text-red-600 hover:underline">Remove</a>
               </div>
             </div>
-            
+
             <!-- Edit Mode -->
             <div class="edit-mode hidden">
               <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -199,14 +195,14 @@
                 </div>
               </div>
               <div class="mt-2 text-right">
-                <button type="button" data-action="location_preference#cancelEdit" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">Cancel</button>
-                <button type="button" data-action="location_preference#edit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                <button type="button" data-action="location-preference#cancelEdit" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">Cancel</button>
+                <button type="button" data-action="location-preference#edit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
               </div>
             </div>
           </div>
         <% end %>
       </div>
-      
+
       <!-- Template for new location items -->
       <template data-location-preference-target="template">
         <div class="nested-fields bg-gray-50 p-4 rounded transition-opacity duration-300" data-preference-id="NEW_ID">
@@ -227,11 +223,11 @@
               </div>
             </div>
             <div class="mt-2 text-right">
-              <a href="#" data-action="location_preference#toggleEditMode" class="text-blue-600 hover:underline mr-3">Edit</a>
-              <a href="#" data-action="location_preference#remove" class="text-red-600 hover:underline">Remove</a>
+              <a href="#" data-action="location-preference#toggleEditMode" class="text-blue-600 hover:underline mr-3">Edit</a>
+              <a href="#" data-action="location-preference#remove" class="text-red-600 hover:underline">Remove</a>
             </div>
           </div>
-          
+
           <!-- Edit Mode -->
           <div class="edit-mode hidden">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -253,28 +249,29 @@
               </div>
             </div>
             <div class="mt-2 text-right">
-              <button type="button" data-action="location_preference#cancelEdit" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">Cancel</button>
-              <button type="button" data-action="location_preference#edit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+              <button type="button" data-action="location-preference#cancelEdit" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">Cancel</button>
+              <button type="button" data-action="location-preference#edit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
             </div>
           </div>
         </div>
       </template>
     </div>
   </div>
-  
-  <!-- Industries Section -->
+
+  <!-- ░░░░░░░░░░ Industries ░░░░░░░░░░ -->
   <div class="mb-8" data-controller="industry-preference">
     <h3 class="text-xl font-bold mb-4">Industries</h3>
+
     <div class="mb-4">
       <p class="text-gray-600 mb-4">Enter industries you're interested in or want to exclude. Higher priority industries will be given preference in filtering.</p>
-      
+
       <div data-industry-preference-target="errors"></div>
-      
+
       <!-- New industry form -->
       <div class="bg-gray-50 p-4 rounded mb-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label for="new_industry" class="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="new_industry">Industry</label>
             <input type="text" id="new_industry" data-industry-preference-target="industry" class="w-full p-2 border rounded" placeholder="e.g. Technology">
           </div>
           <div>
@@ -285,17 +282,17 @@
             </div>
           </div>
           <div data-industry-preference-target="priorityField">
-            <label for="new_industry_priority" class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="new_industry_priority">Priority</label>
             <input type="number" id="new_industry_priority" data-industry-preference-target="priority" min="1" value="1" class="w-full p-2 border rounded">
           </div>
         </div>
         <div class="mt-4 text-right">
-          <button type="button" data-action="industry_preference#add" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" data-action="industry-preference#add" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             Add Industry
           </button>
         </div>
       </div>
-      
+
       <!-- Industries list -->
       <div id="industries" class="space-y-4 transition-all duration-300" data-industry-preference-target="list">
         <% @search_preference.industry_preferences.each do |pref| %>
@@ -318,11 +315,11 @@
                 </div>
               </div>
               <div class="mt-2 text-right">
-                <a href="#" data-action="industry_preference#toggleEditMode" class="text-blue-600 hover:underline mr-3">Edit</a>
-                <a href="#" data-action="industry_preference#remove" class="text-red-600 hover:underline">Remove</a>
+                <a href="#" data-action="industry-preference#toggleEditMode" class="text-blue-600 hover:underline mr-3">Edit</a>
+                <a href="#" data-action="industry-preference#remove" class="text-red-600 hover:underline">Remove</a>
               </div>
             </div>
-            
+
             <!-- Edit Mode -->
             <div class="edit-mode hidden">
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -343,14 +340,14 @@
                 </div>
               </div>
               <div class="mt-2 text-right">
-                <button type="button" data-action="industry_preference#cancelEdit" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">Cancel</button>
-                <button type="button" data-action="industry_preference#edit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                <button type="button" data-action="industry-preference#cancelEdit" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">Cancel</button>
+                <button type="button" data-action="industry-preference#edit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
               </div>
             </div>
           </div>
         <% end %>
       </div>
-      
+
       <!-- Template for new industry items -->
       <template data-industry-preference-target="template">
         <div class="nested-fields bg-gray-50 p-4 rounded transition-opacity duration-300" data-preference-id="NEW_ID">
@@ -372,11 +369,11 @@
               </div>
             </div>
             <div class="mt-2 text-right">
-              <a href="#" data-action="industry_preference#toggleEditMode" class="text-blue-600 hover:underline mr-3">Edit</a>
-              <a href="#" data-action="industry_preference#remove" class="text-red-600 hover:underline">Remove</a>
+              <a href="#" data-action="industry-preference#toggleEditMode" class="text-blue-600 hover:underline mr-3">Edit</a>
+              <a href="#" data-action="industry-preference#remove" class="text-red-600 hover:underline">Remove</a>
             </div>
           </div>
-          
+
           <!-- Edit Mode -->
           <div class="edit-mode hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -397,16 +394,16 @@
               </div>
             </div>
             <div class="mt-2 text-right">
-              <button type="button" data-action="industry_preference#cancelEdit" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">Cancel</button>
-              <button type="button" data-action="industry_preference#edit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+              <button type="button" data-action="industry-preference#cancelEdit" class="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">Cancel</button>
+              <button type="button" data-action="industry-preference#edit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
             </div>
           </div>
         </div>
       </template>
     </div>
   </div>
-  
-  <!-- Automation Settings Section -->
+
+  <!-- ░░░░░░░░░░ Automation ░░░░░░░░░░ -->
   <div class="mb-8">
     <h3 class="text-xl font-bold mb-4">Automation Settings</h3>
     <div class="mb-4" data-controller="auto-search">
@@ -418,4 +415,3 @@
     </div>
   </div>
 </div>
-

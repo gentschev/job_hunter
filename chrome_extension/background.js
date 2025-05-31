@@ -1,119 +1,143 @@
-// Background script for the JobHunter extension
+/* --------------------------------------------------------------
+ * JobHunter – background service-worker (classic script, MV3)
+ * -------------------------------------------------------------- */
 
-import { getAuthToken, getSearchPreferences } from './utils/api.js';
-import { getStoredCredentials, storeCredentials, clearCredentials } from './utils/storage.js';
+// ❶  Bring in our helper bundles (they populate self.JobHunterAPI / Storage)
+importScripts('utils/api.js', 'utils/storage.js');
 
-// Use more secure message handling for Chrome extensions in 2024+
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  // Use async handling with proper error management
+const API     = self.JobHunterAPI     || {};
+const Storage = self.JobHunterStorage || {};
+
+function log(msg, level = 'log') {
+  // eslint-disable-next-line no-console
+  console[level]('%cJobHunter%c ' + msg,
+                 'color:#fff;background:#4B8BFF;padding:2px 4px;border-radius:3px;font-weight:bold;',
+                 'color:#222;');
+}
+
+/* ------------------------------------------------------------------
+ * message bridge – handles requests from popup & content scripts
+ * ------------------------------------------------------------------ */
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   (async () => {
     try {
-      if (message.action === 'login') {
-        const result = await handleLogin(message.email, message.password);
-        sendResponse(result);
-      } 
-      else if (message.action === 'logout') {
-        const result = await handleLogout();
-        sendResponse(result);
+      switch (message.action) {
+        case 'login':
+          return sendResponse(await login(message.email, message.password));
+
+        case 'logout':
+          return sendResponse(await logout());
+
+        case 'getSearchPreferences':
+          return sendResponse(await getSearchPreferences());
+
+        case 'startSearch':
+          return sendResponse(await startSearch());
+
+        case 'checkLoginStatus':
+          return sendResponse(await checkLoginStatus());
+
+        default:
+          return sendResponse({ success: false, error: 'Unknown action' });
       }
-      else if (message.action === 'getSearchPreferences') {
-        const result = await handleGetSearchPreferences();
-        sendResponse(result);
-      }
-      else if (message.action === 'startSearch') {
-        const result = await handleStartSearch();
-        sendResponse(result);
-      }
-      else if (message.action === 'checkLoginStatus') {
-        const result = await handleCheckLoginStatus();
-        sendResponse(result);
-      }
-      else {
-        sendResponse({ success: false, error: 'Unknown action' });
-      }
-    } catch (error) {
-      console.error('Error handling message:', error);
-      sendResponse({ success: false, error: error.message });
+    } catch (err) {
+      console.error('Background handler error:', err);
+      sendResponse({ success: false, error: String(err) });
     }
   })();
-  
-  return true; // Indicates we'll respond asynchronously
+
+  // keep the port open for the async work above
+  return true;
 });
 
-// Handle login requests
-async function handleLogin(email, password) {
+/* ------------------------------------------------------------------
+ *  handler helpers
+ * ------------------------------------------------------------------ */
+async function login(email, password) {
   try {
-    const token = await getAuthToken(email, password);
-    await storeCredentials(email, token);
+    const token = await API.getAuthToken(email, password);
+    await Storage.storeCredentials(email, token);
     return { success: true };
-  } catch (error) {
-    console.error('Login error:', error);
-    return { success: false, error: error.message };
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 }
 
-// Handle logout requests
-async function handleLogout() {
+async function logout() {
   try {
-    await clearCredentials();
+    await Storage.clearCredentials();
     return { success: true };
-  } catch (error) {
-    console.error('Logout error:', error);
-    return { success: false, error: error.message };
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 }
 
-// Handle search preferences requests
-async function handleGetSearchPreferences() {
+async function getSearchPreferences() {
   try {
-    const credentials = await getStoredCredentials();
-    if (!credentials || !credentials.token) {
+    const creds = await Storage.getStoredCredentials();
+    if (!creds?.token) {
       return { success: false, error: 'Not logged in' };
     }
-    
-    const preferences = await getSearchPreferences(credentials.token);
-    return { success: true, preferences };
-  } catch (error) {
-    console.error('Get preferences error:', error);
-    return { success: false, error: error.message };
+    const prefs = await API.getSearchPreferences(creds.token);
+    return { success: true, preferences: prefs };
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 }
 
-// Handle starting a search
-async function handleStartSearch() {
+async function startSearch() {
   try {
-    // Check if we're already on LinkedIn
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
-    if (tab.url.includes('linkedin.com')) {
-      // We're already on LinkedIn, just inject the script
-      await chrome.tabs.sendMessage(tab.id, { action: 'startSearch' });
-      return { success: true };
-    } else {
-      // Navigate to LinkedIn first
-      await chrome.tabs.update(tab.id, { url: 'https://www.linkedin.com/jobs/' });
-      
-      // We'll need the content script to take over after the page loads
-      // Store state to indicate search should start after navigation
+    // active tab of *last focused* window (popup counts as a window!)
+    let [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+
+    // if everything is minimised, create a fresh tab
+    if (!tab) {
+      tab = await chrome.tabs.create({ url: 'https://www.linkedin.com/jobs/' });
       await chrome.storage.local.set({ pendingSearch: true });
       return { success: true, navigating: true };
     }
-  } catch (error) {
-    console.error('Start search error:', error);
-    return { success: false, error: error.message };
+
+    if (tab.url && tab.url.includes('linkedin.com')) {
+      await chrome.tabs.sendMessage(tab.id, { type: 'JOBHUNTER_START_SEARCH' });
+      return { success: true };
+    }
+
+    // otherwise navigate the existing tab and mark that we need to continue
+    await chrome.tabs.update(tab.id, { url: 'https://www.linkedin.com/jobs/' });
+    await chrome.storage.local.set({ pendingSearch: true });
+    return { success: true, navigating: true };
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 }
 
-// Check login status
-async function handleCheckLoginStatus() {
+async function checkLoginStatus() {
   try {
-    const credentials = await getStoredCredentials();
-    return { 
-      loggedIn: !!(credentials && credentials.token), 
-      email: credentials ? credentials.email : null 
+    const creds = await Storage.getStoredCredentials();
+    return {
+      loggedIn: Boolean(creds?.token),
+      email:    creds?.email || null,
     };
-  } catch (error) {
-    console.error('Check login status error:', error);
-    return { loggedIn: false, error: error.message };
+  } catch (err) {
+    return { loggedIn: false, error: err.message };
   }
 }
+
+/* ------------------------------------------------------------------
+ *  resume a “pending search” once LinkedIn finishes loading
+ * ------------------------------------------------------------------ */
+chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
+  if (info.status !== 'complete') return;
+  if (!tab.url || !tab.url.includes('linkedin.com/jobs')) return;
+
+  const { pendingSearch } = await chrome.storage.local.get('pendingSearch');
+  if (!pendingSearch) return;
+
+  await chrome.storage.local.remove('pendingSearch');
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'JOBHUNTER_START_SEARCH' });
+    log('Resumed search after navigation');
+  } catch (err) {
+    console.error('Failed to resume search:', err);
+  }
+});
