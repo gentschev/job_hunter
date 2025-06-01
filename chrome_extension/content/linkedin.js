@@ -1,91 +1,85 @@
-/**
- * Content script injected into LinkedIn’s pages.
- * ----------------------------------------------
- * Listens for the “start search” message from background.js,
- * scrapes job cards, and posts them to your Rails API.
- * All dependencies are read from the global namespaces that
- * other utils expose (JobHunterParser, JobHunterStorage, JobHunterAPI).
- */
+// chrome_extension/content/linkedin.js
 (() => {
-  /* ----- pull helpers exposed by common.js ----- */
+  console.log('[LINKEDIN.JS] Script start'); // 0. Is linkedin.js even starting?
+
+  // Attempt to get the log function first, with robust checking
+  let log;
+  if (window.JobHunter && typeof window.JobHunter.log === 'function') {
+    log = (message, level) => window.JobHunter.log(message, level, 'LINKEDIN');
+    log('Successfully attached to JobHunter.log from common.js');
+  } else {
+    // Fallback logger if JobHunter.log wasn't set by common.js
+    // This indicates common.js might have failed or not run as expected.
+    log = (message, level = 'log') => {
+      const LNK_PREFIX = '%cJobHunter (LINKEDIN - Fallback Log)%c';
+      const styles = ['color:red;font-weight:bold;', 'color:inherit;'];
+      console[level](LNK_PREFIX, ...styles, message);
+    };
+    log('Using fallback logger. window.JobHunter or window.JobHunter.log was not found!', 'error');
+  }
+
+  log('Attempting to source common utilities...');
+  const commonUtils = window.JobHunter;
+  log('1. window.JobHunter (at start of linkedin.js):', JSON.stringify(commonUtils ? Object.keys(commonUtils) : undefined));
 
   const {
-    log,
     waitForElement,
     scrollToElement,
-    insertJobHunterButton,
-  } = window.JobHunter;
+    // insertJobHunterButton, // Assuming this is also on window.JobHunter if needed
+  } = commonUtils || {}; // Fallback to empty object if commonUtils is undefined
 
-  /* ----- pull helpers exposed by other util files ----- */
+  log('2. Sourced common utils (waitForElement etc.)');
 
-  const { parseJobCard, parseJobDetails } = window.JobHunterParser ?? {};
-  const Storage = window.JobHunterStorage ?? {};
-  const API     = window.JobHunterAPI     ?? {};
+  log('Attempting to source JobHunterParser...');
+  const JobHunterParser = (window.JobHunter && window.JobHunter.JobHunterParser) || {};
+  log('3. window.JobHunter.JobHunterParser:', JSON.stringify(JobHunterParser ? Object.keys(JobHunterParser) : undefined));
+  const { parseJobCard, parseJobDetails } = JobHunterParser; // Destructure after checking JobHunterParser
 
-  if (!parseJobCard || !API.sendJobListings) {
-    log('Required helpers not found – make sure utils/*.js files are loaded first.', 'error');
+  log('Attempting to source JobHunterStorage...');
+  const JobHunterStorage = (window.JobHunter && window.JobHunter.JobHunterStorage) || {};
+  log('4. window.JobHunter.JobHunterStorage:', JSON.stringify(JobHunterStorage ? Object.keys(JobHunterStorage) : undefined));
+  // const Storage = JobHunterStorage; // No need to rename if you use JobHunterStorage directly
+
+  log('Attempting to source JobHunterAPI...');
+  const JobHunterAPI = (window.JobHunter && window.JobHunter.JobHunterAPI) || {};
+  log('5. window.JobHunter.JobHunterAPI:', JSON.stringify(JobHunterAPI ? Object.keys(JobHunterAPI) : undefined));
+  // const API = JobHunterAPI; // No need to rename
+
+  log('Check 1 (parseJobCard exists):', typeof parseJobCard === 'function');
+  log('Check 2 (JobHunterAPI.sendJobListings exists):', typeof JobHunterAPI.sendJobListings === 'function');
+
+  if (typeof parseJobCard !== 'function' || typeof JobHunterAPI.sendJobListings !== 'function') {
+    log('Required helpers (parseJobCard or JobHunterAPI.sendJobListings) are not available or not functions.', 'error');
+    // Log more details about what *is* available
+    log('Detailed window.JobHunter content:', window.JobHunter);
+    log('Detailed JobHunterParser content:', JobHunterParser);
+    log('Detailed JobHunterAPI content:', JobHunterAPI);
     return;
   }
 
-  /* ---------- scrape & post ---------- */
+  log('All required helpers appear to be available. Proceeding...');
 
-  /** Scrape the visible search results list. */
-  function scrapeVisibleCards() {
-    const cards = document.querySelectorAll('.jobs-search-results__list-item');
-    return Array.from(cards)
-      .map(card => {
-        try { return parseJobCard(card); }
-        catch (e) { log(`parseJobCard failed: ${e}`, 'warn'); return null; }
-      })
-      .filter(Boolean);
+  /* ---------- scrape & post (rest of your linkedin.js code) ---------- */
+  // ...
+  // Remember to use 'JobHunterAPI.sendJobListings' and 'JobHunterStorage.storeJobListings'
+  // and 'parseJobCard' directly.
+  // ...
+
+  // Example usage:
+  // await JobHunterAPI.sendJobListings(listings);
+  // JobHunterStorage.storeJobListings(listings);
+
+  // ...
+
+  // Your init actions:
+  // insertJobHunterButton(); // Make sure this is defined on commonUtils or JobHunter
+  if (commonUtils && typeof commonUtils.insertJobHunterButton === 'function') {
+      commonUtils.insertJobHunterButton();
+  } else if (typeof insertJobHunterButton === 'function') {
+      insertJobHunterButton(); // If destructured successfully
+  } else {
+      log('insertJobHunterButton is not available.', 'warn');
   }
 
-  /** Scroll through the list and gather unique job IDs. */
-  async function gatherAllCards(maxScrolls = 25) {
-    const listings = [];
-    const seen = new Set();
-
-    const listEl = await waitForElement('.scaffold-layout__list-container');
-    if (!listEl) { log('Job results list not found', 'error'); return listings; }
-
-    for (let i = 0; i < maxScrolls; i++) {
-      listings.push(...scrapeVisibleCards().filter(j => !seen.has(j.id)));
-      listings.forEach(j => seen.add(j.id));
-      listEl.scrollBy(0, listEl.clientHeight);          // paginate
-      await new Promise(r => setTimeout(r, 800));       // allow new cards to load
-    }
-    return listings;
-  }
-
-  async function runSearch() {
-    log('Starting LinkedIn scrape…');
-    const listings = await gatherAllCards();
-
-    log(`Found ${listings.length} job cards - fetching details…`);
-    for (const listing of listings) {
-      const details = await parseJobDetails(listing.id).catch(() => null);
-      Object.assign(listing, details);
-    }
-
-    log('Posting listings to API…');
-    await API.sendJobListings(listings);
-    Storage.storeJobListings(listings);
-    log('✅ Job search complete');
-  }
-
-  /* ---------- message bridge ---------- */
-
-  chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-    if (msg.type === 'JOBHUNTER_START_SEARCH') {
-      runSearch()
-        .then(() => sendResponse({ ok: true }))
-        .catch(err => sendResponse({ ok: false, error: String(err) }));
-      return true; // keep the message port open for async response
-    }
-  });
-
-  /* ---------- init actions ---------- */
-
-  insertJobHunterButton();
   log('linkedin.js loaded and listening for messages');
 })();
