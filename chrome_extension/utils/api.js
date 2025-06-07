@@ -82,20 +82,44 @@
     }
   }
 
-  async function sendJobListings(token, jobListings) {
+  async function sendJobListings(tokenOrJobListings, jobListings) {
     try {
+      // Handle both authenticated and simplified modes
+      let token, actualJobListings;
+      
+      if (typeof tokenOrJobListings === 'string') {
+        // Authenticated mode: first param is token, second is job listings
+        token = tokenOrJobListings;
+        actualJobListings = jobListings;
+      } else {
+        // Simplified mode: first param is job listings array, no token
+        token = null;
+        actualJobListings = tokenOrJobListings;
+      }
+
+      if (!actualJobListings || !Array.isArray(actualJobListings)) {
+        throw new Error('Job listings must be an array');
+      }
+
       const batchSize = 10; // Example batch size
       let savedCount = 0;
       let errors = [];
 
-      for (let i = 0; i < jobListings.length; i += batchSize) {
-        const batch = jobListings.slice(i, i + batchSize);
+      for (let i = 0; i < actualJobListings.length; i += batchSize) {
+        const batch = actualJobListings.slice(i, i + batchSize);
+        
+        // Build headers conditionally based on authentication mode
+        const headers = {
+          'Content-Type': 'application/json'
+        };
+        
+        if (token) {
+          headers['Authorization'] = `Token token=${token}`;
+        }
+        
         const response = await fetch(`${API_BASE_URL}/job_listings/batch`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token token=${token}` // Or `Bearer ${token}`
-          },
+          headers,
           body: JSON.stringify({ job_listings: batch })
         });
 

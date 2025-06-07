@@ -122,9 +122,23 @@ async function handleLogout() {
 /**
  * Fetches search preferences for the logged-in user from the backend API.
  * @returns {Promise<object>} Object containing preferences on success, or error details.
+ * Note: Login requirement has been removed for testing purposes.
  */
 async function handleGetSearchPreferences() {
   try {
+    log('Skipping authentication check for search preferences (simplified version)');
+    
+    // Return dummy preferences for now - no API call needed
+    return { 
+      success: true, 
+      preferences: {
+        job_titles: ["Software Engineer", "Full Stack Developer"],
+        locations: ["Remote", "San Francisco, CA"],
+        industries: ["Technology", "Software"]
+      } 
+    };
+    
+    /* Original code with authentication - commented out
     if (!Storage.getStoredCredentials) throw new Error("Storage.getStoredCredentials utility is not available.");
     const creds = await Storage.getStoredCredentials();
 
@@ -138,6 +152,7 @@ async function handleGetSearchPreferences() {
 
     log('Search preferences retrieved.');
     return { success: true, preferences: prefs };
+    */
   } catch (err) {
     log(`Failed to get search preferences: ${err.message}`, 'error');
     return { success: false, error: err.message };
@@ -175,7 +190,8 @@ async function handleStartSearch(senderTab) {
     if (tabToUse.url && tabToUse.url.includes('linkedin.com')) {
       log(`Starting search on existing LinkedIn tab: ID ${tabToUse.id}`);
       // Ensure content script is listening for { action: 'startSearch' }
-      await chrome.tabs.sendMessage(tabToUse.id, { action: 'startSearch' });
+      const response = await chrome.tabs.sendMessage(tabToUse.id, { action: 'startSearch' });
+      log(`Received response from content script: ${JSON.stringify(response)}`);
       return { success: true };
     }
 
@@ -258,4 +274,23 @@ chrome.runtime.onInstalled.addListener(details => {
   } else if (details.reason === 'update') {
     log('Extension updated. Performing any necessary migrations...');
   }
+});
+
+/**
+ * Listener for messages from content scripts.
+ * This handles 'searchComplete' and 'searchError' messages and forwards them to the popup.
+ */
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  log(`Received message from content script: ${JSON.stringify(message)}`);
+  
+  // Forward search-related messages to any open popup
+  if (message.action === 'searchComplete' || message.action === 'searchError') {
+    log(`Forwarding ${message.action} message to popup`);
+    chrome.runtime.sendMessage(message).catch(err => {
+      // This will happen if no popup is open to receive the message - it's normal
+      log(`No receiver for ${message.action} message: ${err.message}`, 'info');
+    });
+  }
+  
+  sendResponse({ received: true });
 });

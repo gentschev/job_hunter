@@ -166,50 +166,14 @@
   </header>
   
   <div class="container">
-    <!-- Login Form (shown when not logged in) -->
-    <div id="login-section">
-      <form id="login-form">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" required>
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" required>
-        </div>
-        <div class="form-group">
-          <button type="submit" id="login-button">Sign In</button>
-        </div>
-        <div id="login-message" class="error-message hidden"></div>
-      </form>
-    </div>
-    
     <!-- Loading Section -->
     <div id="loading-section" class="hidden">
       <div class="spinner"></div>
       <p id="loading-message">Loading...</p>
     </div>
     
-    <!-- Main Content (shown when logged in) -->
-    <div id="main-section" class="hidden">
-      <div class="user-info">
-        <div class="avatar">
-          <span id="user-initial">U</span>
-        </div>
-        <div class="email" id="user-email">user@example.com</div>
-      </div>
-      
-      <div class="stats">
-        <div class="stat-card">
-          <div class="number" id="new-listings-count">0</div>
-          <div class="label">New Listings</div>
-        </div>
-        <div class="stat-card">
-          <div class="number" id="applied-count">0</div>
-          <div class="label">Applied</div>
-        </div>
-      </div>
-      
+    <!-- Main Content -->
+    <div id="main-section">
       <div class="section">
         <button id="start-search-button">Start Job Search</button>
         <div id="search-message" class="hidden"></div>
@@ -219,10 +183,6 @@
         <div class="section-title">Quick Actions</div>
         <button id="view-dashboard-button">View Dashboard</button>
         <button id="edit-preferences-button">Edit Preferences</button>
-      </div>
-      
-      <div class="section">
-        <button id="logout-button">Sign Out</button>
       </div>
     </div>
   </div>

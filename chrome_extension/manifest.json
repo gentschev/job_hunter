@@ -31,6 +31,8 @@
         "utils/api.js",
         "utils/storage.js",
         "utils/parser.js",
+        "utils/json_parser.js",
+        "utils/job_detail_extractor.js",
         "content/linkedin.js"
       ],
       "run_at": "document_idle"
