@@ -82,22 +82,13 @@
     }
   }
 
-  async function sendJobListings(tokenOrJobListings, jobListings) {
+  async function sendJobListings(token, jobListings) {
     try {
-      // Handle both authenticated and simplified modes
-      let token, actualJobListings;
-      
-      if (typeof tokenOrJobListings === 'string') {
-        // Authenticated mode: first param is token, second is job listings
-        token = tokenOrJobListings;
-        actualJobListings = jobListings;
-      } else {
-        // Simplified mode: first param is job listings array, no token
-        token = null;
-        actualJobListings = tokenOrJobListings;
+      if (!token) {
+        throw new Error('Authentication token is required');
       }
-
-      if (!actualJobListings || !Array.isArray(actualJobListings)) {
+      
+      if (!jobListings || !Array.isArray(jobListings)) {
         throw new Error('Job listings must be an array');
       }
 
@@ -105,21 +96,15 @@
       let savedCount = 0;
       let errors = [];
 
-      for (let i = 0; i < actualJobListings.length; i += batchSize) {
-        const batch = actualJobListings.slice(i, i + batchSize);
-        
-        // Build headers conditionally based on authentication mode
-        const headers = {
-          'Content-Type': 'application/json'
-        };
-        
-        if (token) {
-          headers['Authorization'] = `Token token=${token}`;
-        }
+      for (let i = 0; i < jobListings.length; i += batchSize) {
+        const batch = jobListings.slice(i, i + batchSize);
         
         const response = await fetch(`${API_BASE_URL}/job_listings/batch`, {
           method: 'POST',
-          headers,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({ job_listings: batch })
         });
 

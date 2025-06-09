@@ -18,5 +18,16 @@ module JobHunter
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # CORS configuration for Chrome extension
+    config.middleware.insert_before 0, Rack::Cors do
+      allow do
+        origins 'https://www.linkedin.com', 'https://linkedin.com'
+        resource '/api/*',
+          headers: :any,
+          methods: [:get, :post, :put, :patch, :delete, :options, :head],
+          credentials: false
+      end
+    end
   end
 end

@@ -66,6 +66,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         case 'checkLoginStatus':
           result = await handleCheckLoginStatus();
           break;
+        case 'submitJobs':
+          result = await handleSubmitJobs(message.jobs);
+          break;
         default:
           result = { success: false, error: 'Unknown action' };
           log(`Unknown action received: "${message.action}"`, 'warn');
@@ -168,6 +171,25 @@ async function handleGetSearchPreferences() {
  */
 async function handleStartSearch(senderTab) {
   try {
+    // First, ensure we have valid credentials
+    if (!Storage.getStoredCredentials) throw new Error("Storage.getStoredCredentials utility is not available.");
+    const creds = await Storage.getStoredCredentials();
+    
+    if (!creds || !creds.token) {
+      log('No authentication credentials found. Attempting to login with test user...');
+      // For development, try to login with a test user
+      // In production, this would prompt user for credentials
+      try {
+        const loginResult = await handleLogin('test@example.com', 'password');
+        if (!loginResult.success) {
+          return { success: false, error: 'Authentication failed. Please login first.' };
+        }
+        log('Successfully authenticated with test credentials.');
+      } catch (loginError) {
+        return { success: false, error: `Authentication failed: ${loginError.message}` };
+      }
+    }
+
     let tabToUse = senderTab;
 
     // If senderTab is not the active content tab (e.g., if message is from popup),
@@ -203,6 +225,54 @@ async function handleStartSearch(senderTab) {
 
   } catch (err) {
     log(`Failed to start search: ${err.message}`, 'error');
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Handles job submission to the backend API.
+ * @param {Array} jobs - Array of job objects to submit
+ * @returns {Promise<object>} Object indicating submission success and results
+ */
+async function handleSubmitJobs(jobs) {
+  try {
+    if (!jobs || !Array.isArray(jobs) || jobs.length === 0) {
+      return { success: false, error: 'No jobs provided for submission' };
+    }
+
+    log(`Submitting ${jobs.length} jobs to backend API`);
+
+    // Ensure we have valid credentials
+    if (!Storage.getStoredCredentials) throw new Error("Storage.getStoredCredentials utility is not available.");
+    const creds = await Storage.getStoredCredentials();
+
+    if (!creds || !creds.token) {
+      log('No authentication credentials found. Attempting to login...');
+      const loginResult = await handleLogin('test@example.com', 'password');
+      if (!loginResult.success) {
+        return { success: false, error: 'Authentication failed. Please login first.' };
+      }
+      // Get updated credentials after login
+      const newCreds = await Storage.getStoredCredentials();
+      if (!newCreds || !newCreds.token) {
+        return { success: false, error: 'Failed to obtain authentication token' };
+      }
+    }
+
+    // Submit jobs using API utility
+    if (!API.sendJobListings) throw new Error("API.sendJobListings utility is not available.");
+    const updatedCreds = await Storage.getStoredCredentials();
+    const result = await API.sendJobListings(updatedCreds.token, jobs);
+
+    log(`Job submission completed: ${result.saved_count} saved, ${result.errors?.length || 0} errors`);
+    return {
+      success: true,
+      saved_count: result.saved_count,
+      errors: result.errors
+    };
+
+  } catch (err) {
+    log(`Failed to submit jobs: ${err.message}`, 'error');
     return { success: false, error: err.message };
   }
 }

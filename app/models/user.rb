@@ -7,15 +7,21 @@ class User < ApplicationRecord
   
   after_create :create_default_search_preference
   
-  # Authentication token for API access
+  # Generate JWT token for API access
   def generate_authentication_token
-    loop do
-      token = SecureRandom.hex(24)
-      if !User.exists?(authentication_token: token)
-        update(authentication_token: token)
-        return token
-      end
-    end
+    payload = {
+      user_id: self.id,
+      email: self.email,
+      iat: Time.current.to_i,
+      exp: 24.hours.from_now.to_i,
+      jti: SecureRandom.uuid
+    }
+    
+    JWT.encode(
+      payload,
+      Rails.application.credentials.secret_key_base,
+      'HS256'
+    )
   end
   
   private

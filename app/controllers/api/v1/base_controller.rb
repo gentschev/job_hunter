@@ -4,6 +4,8 @@ module Api
     class BaseController < ApplicationController
       # JSON requests from fetch don’t include the CSRF token; skip the check
       skip_before_action :verify_authenticity_token
+      # Skip Devise authentication for API endpoints - we use JWT instead  
+      skip_before_action :authenticate_user!
 
       private
 

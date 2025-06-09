@@ -85,6 +85,8 @@ gem 'pundit'
 gem 'sidekiq'
 # API serialization
 gem 'active_model_serializers'
+# CORS support for API
+gem 'rack-cors'
 # For Ruby 3.2 compatibility
 gem 'net-smtp', require: false
 gem 'net-imap', require: false

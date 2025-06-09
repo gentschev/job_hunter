@@ -148,11 +148,20 @@
       log(`=== Stage 3: Data Submission ===`);
       log(`Submitting ${jobDetails.length} job details to backend`);
 
-      // Submit job details to backend API
+      // Submit job details via background script (to bypass CSP)
       if (jobDetails.length > 0) {
         try {
-          await JobHunterAPI.sendJobListings(jobDetails);
-          log(`✅ Successfully submitted ${jobDetails.length} jobs to backend`);
+          log('Sending job data to background script for API submission...');
+          const response = await chrome.runtime.sendMessage({
+            action: 'submitJobs',
+            jobs: jobDetails
+          });
+          
+          if (response && response.success) {
+            log(`✅ Successfully submitted ${response.saved_count || jobDetails.length} jobs to backend`);
+          } else {
+            log(`⚠️  API submission failed: ${response?.error || 'Unknown error'}`, 'warn');
+          }
         } catch (apiError) {
           log(`⚠️  API submission failed: ${apiError.message}`, 'warn');
           // Continue anyway - we still found jobs
